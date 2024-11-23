@@ -134,10 +134,35 @@ class Modelo():
             print(f'Modelo: regressão linear, Espécie: {especie}, Mean Squared Error: {mse}')
         
     def treinamento_SVC(self):
-        pass
+        
+        # Mapear os números de volta para as espécies (opcional)
+        self.df['Species'] = self.df['Species'].map({'Iris-setosa':0, 'Iris-versicolor':1, 'Iris-virginica':2})   
+        
+        X = self.df.drop(columns=['Species'])
+        Y = self.df['Species']
+        
+        # Dividir os dados em treino e teste
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+        
+        self.model.fit(X_train, Y_train)
+        
+        # Prever os valores com o conjunto de teste
+        Y_pred = self.model.predict(X_test)
+
+        self.svc = ModeloExecutado(X_train, X_test, Y_train, Y_test, Y_pred, self.model)
+
         
     def teste_SVC(self):
-        pass:
+        mse = mean_squared_error(self.svc.Y_test, self.svc.Y_pred)
+        print(f'Modelo: SVC, Mean Squared Error: {mse}')
+        
+        print('-'*80)
+        
+        Y_test = self.svc.Y_test.tolist()
+        
+        for i in range(0,len(Y_test)):
+            print(f"i:{i} Igual: {Y_test[i]==self.svc.Y_pred[i]} Y_test:{Y_test[i]} Y_pred:{self.svc.Y_pred[i]}")
+        
         
     def Treinamento(self):
         """
@@ -198,16 +223,23 @@ class Modelo():
 def main():
 
     #regressão linear   
+    print("*"*80)
+    print("MODELO REGRESSÃO LINEAR")
+    print("*"*80)
+
     modelo1 = Modelo()   
     modelo1.define_model(0)
     modelo1.Train()
     modelo1.Teste()
     
     # SVC
+    print("*"*80)
+    print("MODELO SVC")
+    print("*"*80)
     modelo2 = Modelo()   
-    modelo1.define_model(1)
-    modelo1.Train()
-    modelo1.Teste()
+    modelo2.define_model(1)
+    modelo2.Train()
+    modelo2.Teste()
 
 
 if __name__ == "__main__":
