@@ -6,9 +6,28 @@ from sklearn.svm import SVC
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 
+
+class ModeloExecutado():
+    def __init__(self, X_train, X_test, Y_train, Y_test, Y_pred, model ):
+        self.X_train = X_train
+        self.X_test = X_test
+        self.Y_train = Y_train 
+        self.Y_test = Y_test
+        self.Y_pred = Y_pred
+        self.model = model
+    
+
 class Modelo():
     def __init__(self):
         pass
+
+    def define_model(self, tipo_modelo:int):
+        if tipo_modelo == 0:
+            self.model = LinearRegression()
+            self.tipo_modelo = tipo_modelo
+        else:
+            self.model = SVC()
+            self.tipo_modelo = tipo_modelo
 
     def CarregarDataset(self, path):
         """
@@ -75,6 +94,51 @@ class Modelo():
         print(f"{self.df_encoded.describe(include='all')}")
         print("-"*80)
         
+    def treinamento_regressao_linear(self):
+ 
+        self.regr_lin_result = {}
+        especies = ['Species_Iris-setosa', 'Species_Iris-versicolor', 'Species_Iris-virginica']
+ 
+        for chave in especies:
+
+            print(f"Executando regressão linear para espécie {chave}")
+
+            # Variáveis independentes (X)
+            # Avaliar flor que está na chave
+            colunas_a_remover = [item for item in especies if item != chave]
+            X = self.df_encoded.drop(columns=colunas_a_remover)
+            
+            # Variável dependente (Y) - precisamos de valores numéricos para a regressão
+            Y = self.df_encoded[chave].astype(int)  # Convertendo para 0 ou 1
+           
+            # Dividir os dados em treino e teste
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+
+            self.model.fit(X_train, Y_train)
+
+            # Prever os valores com o conjunto de teste
+            Y_pred = self.model.predict(X_test)
+
+            modelo_executado = ModeloExecutado(X_train, X_test, Y_train, Y_test, Y_pred, self.model)
+            
+            self.regr_lin_result[chave] = modelo_executado
+
+
+    def teste_regressao_linear(self):
+        
+        # Avaliar o modelo
+        
+        for especie, modelo in self.regr_lin_result.items():
+        
+            mse = mean_squared_error(modelo.Y_test, modelo.Y_pred)
+            print(f'Modelo: regressão linear, Espécie: {especie}, Mean Squared Error: {mse}')
+        
+    def treinamento_SVC(self):
+        pass
+        
+    def teste_SVC(self):
+        pass:
+        
     def Treinamento(self):
         """
         Treina o modelo de machine learning.
@@ -87,21 +151,11 @@ class Modelo():
         Nota: Esta função deve ser ajustada conforme o modelo escolhido.
         """
         
-        # Variáveis independentes (X)
-        # Avaliar Iris-setosa
-        X = self.df_encoded.drop(columns=['Species_Iris-versicolor', 'Species_Iris-virginica'])
+        if self.tipo_modelo == 0:
+            self.treinamento_regressao_linear()
+        else:
+            self.treinamento_SVC()
         
-        # Variável dependente (Y) - precisamos de valores numéricos para a regressão
-        Y = self.df_encoded['Species_Iris-setosa'].astype(int)  # Convertendo para 0 ou 1
-       
-        # Dividir os dados em treino e teste
-        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-
-        self.model = LinearRegression()
-        self.model.fit(self.X_train, self.Y_train)
-
-        # Prever os valores com o conjunto de teste
-        self.Y_pred = self.model.predict(self.X_test)
 
 
     def Teste(self):
@@ -112,9 +166,10 @@ class Modelo():
         como acurácia, precisão, ou outras métricas apropriadas ao tipo de problema.
         """
         
-        # Avaliar o modelo
-        mse = mean_squared_error(self.Y_test, self.Y_pred)
-        print(f'Mean Squared Error: {mse}')
+        if self.tipo_modelo == 0:
+            self.teste_regressao_linear()
+        else:
+            self.teste_SVC()
         
 
     def Train(self):
@@ -141,14 +196,18 @@ class Modelo():
 
 
 def main():
-    
-    modelo1 = Modelo()
-    
+
+    #regressão linear   
+    modelo1 = Modelo()   
+    modelo1.define_model(0)
     modelo1.Train()
     modelo1.Teste()
     
-    
-
+    # SVC
+    modelo2 = Modelo()   
+    modelo1.define_model(1)
+    modelo1.Train()
+    modelo1.Teste()
 
 
 if __name__ == "__main__":
