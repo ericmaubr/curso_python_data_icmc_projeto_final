@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
 
 class Modelo():
     def __init__(self):
@@ -62,15 +63,18 @@ class Modelo():
         # remove linhas em vazias
         # apesar de não haver linhas com dados vazios, é uma boa prática
         self.df = self.df.dropna()
-        
+           
         # aplica One-Hot Encoding na coluna Species
         # Removendo a primeira coluna. Ideal para regressão linear para evitar multicolinearidade.
-        self.df_hot_encoding = pd.get_dummies(self.df, columns=['Species'], drop_first=True)
+        self.df_encoded = pd.get_dummies(self.df, columns=['Species'], drop_first=False)
         
         # visualização do dataframe após One-Hot Encoding
         print("Dataframe após One-Hot Encoding de Species")
-        print(self.df_hot_encoding)
-
+        print(self.df_encoded)
+        print(f"Resumo dos dados")
+        print(f"{self.df_encoded.describe(include='all')}")
+        print("-"*80)
+        
     def Treinamento(self):
         """
         Treina o modelo de machine learning.
@@ -83,11 +87,21 @@ class Modelo():
         Nota: Esta função deve ser ajustada conforme o modelo escolhido.
         """
         
-        modelo = LinearRegression()
+        # Variáveis independentes (X)
+        # Avaliar Iris-setosa
+        X = self.df_encoded.drop(columns=['Species_Iris-versicolor', 'Species_Iris-virginica'])
         
-        X = np.array(self.df[['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']])
-        Y = np.array(self.df['Species'])
+        # Variável dependente (Y) - precisamos de valores numéricos para a regressão
+        Y = self.df_encoded['Species_Iris-setosa'].astype(int)  # Convertendo para 0 ou 1
+       
+        # Dividir os dados em treino e teste
+        self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
+        self.model = LinearRegression()
+        self.model.fit(self.X_train, self.Y_train)
+
+        # Prever os valores com o conjunto de teste
+        self.Y_pred = self.model.predict(self.X_test)
 
 
     def Teste(self):
@@ -97,7 +111,11 @@ class Modelo():
         Esta função deve ser implementada para testar o modelo e calcular métricas de avaliação relevantes, 
         como acurácia, precisão, ou outras métricas apropriadas ao tipo de problema.
         """
-        pass
+        
+        # Avaliar o modelo
+        mse = mean_squared_error(self.Y_test, self.Y_pred)
+        print(f'Mean Squared Error: {mse}')
+        
 
     def Train(self):
         """
@@ -127,6 +145,7 @@ def main():
     modelo1 = Modelo()
     
     modelo1.Train()
+    modelo1.Teste()
     
     
 
