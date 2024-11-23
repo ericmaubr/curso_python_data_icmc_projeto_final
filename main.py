@@ -18,7 +18,13 @@ class Modelo():
         """
         names = ['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm', 'Species']
         self.df = pd.read_csv(path, names=names)
-
+        
+        print(f"Quantidade de linhas carregadas: {len(self.df)}")
+        print("-"*80)
+        print(f"Resumo dos dados")
+        print(f"{self.df.describe(include='all')}")
+        print("-"*80)
+        
     def TratamentoDeDados(self):
         """
         Realiza o pré-processamento dos dados carregados.
@@ -32,7 +38,17 @@ class Modelo():
             * Explore gráficos e visualizações para obter insights sobre a distribuição dos dados.
             * Certifique-se de que os dados estão limpos e prontos para serem usados no treinamento do modelo.
         """
-        pass
+        
+        # remove linhas em vazias
+        # apesar de não haver linhas com dados vazios, é uma boa prática
+        self.df = self.df.dropna()
+        
+        # aplica One-Hot Encoding na coluna Species
+        self.df = pd.get_dummies(self.df, columns=['Species'], drop_first=True)
+        
+        # visualização do dataframe após One-Hot Encoding
+        print("Dataframe após One-Hot Encoding de Species")
+        print(self.df)
 
     def Treinamento(self):
         """
@@ -77,3 +93,19 @@ class Modelo():
 # Lembre-se de instanciar as classes após definir suas funcionalidades
 # Recomenda-se criar ao menos dois modelos (e.g., Regressão Linear e SVM) para comparar o desempenho.
 # A biblioteca já importa LinearRegression e SVC, mas outras escolhas de modelo são permitidas.
+
+
+def main():
+    
+    modelo1 = Modelo()
+    
+    modelo1.Train()
+    
+    
+
+
+
+if __name__ == "__main__":
+    main()
+    
+    
