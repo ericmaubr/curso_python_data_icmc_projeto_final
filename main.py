@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib.pyplot as plt 
+import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 from sklearn.linear_model import LinearRegression
@@ -25,6 +27,24 @@ class Modelo():
         print(f"{self.df.describe(include='all')}")
         print("-"*80)
         
+        
+        # apresenta um gráfico 3d com  SepalLengthCm, SepalWidthCm, PetalLengthCm
+        cores = ['red' if s == 'Iris-setosa' else 'green' if s == 'Iris-versicolor' else 'blue' for s in self.df['Species']]
+   
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+        ax.set_title("SepalLengthCm, SepalWidthCm, PetalLengthCm")
+        ax.scatter(self.df['SepalLengthCm'], self.df['SepalWidthCm'], self.df['PetalLengthCm'], c = cores)
+        plt.show()
+        
+        # apresenta um gráfico 3d com  SepalLengthCm, SepalWidthCm, PetalWidthCm
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+        ax.set_title("SepalLengthCm, SepalWidthCm, PetalWidthCm")
+        ax.scatter(self.df['SepalLengthCm'], self.df['SepalWidthCm'], self.df['PetalWidthCm'], c = cores)
+        plt.show()
+        
+        
     def TratamentoDeDados(self):
         """
         Realiza o pré-processamento dos dados carregados.
@@ -44,11 +64,12 @@ class Modelo():
         self.df = self.df.dropna()
         
         # aplica One-Hot Encoding na coluna Species
-        self.df = pd.get_dummies(self.df, columns=['Species'], drop_first=True)
+        # Removendo a primeira coluna. Ideal para regressão linear para evitar multicolinearidade.
+        self.df_hot_encoding = pd.get_dummies(self.df, columns=['Species'], drop_first=True)
         
         # visualização do dataframe após One-Hot Encoding
         print("Dataframe após One-Hot Encoding de Species")
-        print(self.df)
+        print(self.df_hot_encoding)
 
     def Treinamento(self):
         """
@@ -61,7 +82,13 @@ class Modelo():
         
         Nota: Esta função deve ser ajustada conforme o modelo escolhido.
         """
-        pass
+        
+        modelo = LinearRegression()
+        
+        X = np.array(self.df[['SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']])
+        Y = np.array(self.df['Species'])
+
+
 
     def Teste(self):
         """
